@@ -138,8 +138,7 @@ model_cnn.compile(loss="binary_crossentropy", optimizer=opt,
 	metrics=["accuracy"])
 # train the network
 start_time = time.time()
-H = model_cnn.fit_generator(aug.flow(data_train, labels_train, batch_size=BS),
-	validation_data=(data_test, labels_test), steps_per_epoch=len(data_train) // BS,
+H = model_cnn.fit(data_train, labels_train, batch_size=BS, steps_per_epoch=len(data_train) // BS,
 	epochs=EPOCHS)
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
