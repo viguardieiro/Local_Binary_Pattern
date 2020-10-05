@@ -3,15 +3,15 @@
 
 # # Import Library
 
-# In[1]:
-
-
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV
+from keras.optimizers import Adam
+from keras.utils import np_utils
+from pyimagesearch.livenessnet import LivenessNet
 import os
 import time
 import numpy as np
@@ -23,9 +23,6 @@ warnings.filterwarnings('ignore')
 
 
 # # Loading Model
-
-# In[2]:
-
 
 pickle_in = open("data/data_train.pickle","rb")
 data_train = pickle.load(pickle_in)
@@ -41,9 +38,6 @@ labels_test = pickle.load(pickle_in)
 
 
 # # Tunning KNN model
-
-# In[3]:
-
 
 #List Hyperparameters that we want to tune.
 #leaf_size = list(range(1,50))
@@ -65,9 +59,6 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # Tunning Logistic Regression
 
-# In[4]:
-
-
 #List Hyperparameters that we want to tune.
 dual=[True,False]
 max_iter=[100,110,120,130,140]
@@ -86,9 +77,6 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 
 # # Tunning Random Forest
-
-# In[5]:
-
 
 # Create the parameter grid based on the results of random search 
 hyperparameters = {
@@ -113,9 +101,6 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # Tunning SVC Linear
 
-# In[6]:
-
-
 # Create the parameter grid based on the results of random search 
 hyperparameters = {
     'penalty': ["l1", "l2"],
@@ -133,22 +118,36 @@ best_model_svm = model_svm_tune.fit(data_train, labels_train)
 print("Best: %f using %s" % (best_model_svm.best_score_,best_model_svm.best_params_))
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
+# # CNN
+
+# initialize the initial learning rate, batch size, and number of
+# epochs to train for
+INIT_LR = 1e-4
+BS = 8
+EPOCHS = 100
+# initialize the optimizer and model
+opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
+model_cnn = LivenessNet.build(width=32, height=32, depth=3,
+	classes=len(le.classes_))
+model_cnn.compile(loss="binary_crossentropy", optimizer=opt,
+	metrics=["accuracy"])
+# train the network
+start_time = time.time()
+H = model_cnn.fit_generator(aug.flow(data_train, labels_train, batch_size=BS),
+	validation_data=(data_test, labels_test), steps_per_epoch=len(data_train) // BS,
+	epochs=EPOCHS)
+print("Execution time: " + str((time.time() - start_time)) + ' ms')
+
 
 # # Prediction
-
-# In[7]:
-
 
 prediction_rf = best_model_random_forest.predict(data_test)
 prediction_svm = best_model_svm.predict(data_test)
 prediction_knn = best_model_neigh.predict(data_test)
 prediction_logistic = best_model_logistic.predict(data_test)
-
+prediction_cnn = model_cnn.predict(data_test, batch_size=BS)
 
 # # Accuracy Best Models
-
-# In[8]:
-
 
 # accuracy
 print("Modelo SVM",
@@ -163,11 +162,11 @@ classification_report(labels_test,prediction_knn))
 print("Modelo Logistico",
 classification_report(labels_test,prediction_logistic))
 
+print("Modelo CNN",
+classification_report(labels_test,prediction_cnn))
 
-# # Salvando Modelos
 
-# In[9]:
-
+# # Save Models
 
 # Random Forest
 filename = 'models/best_model_random_forest.joblib'
@@ -185,9 +184,6 @@ joblib.dump(best_model_svm, filename)
 filename = 'models/best_model_logistic.joblib'
 joblib.dump(best_model_logistic, filename)
 
-
-# In[ ]:
-
-
-
-
+# CNN
+filename = 'models/model_cnn.joblib'
+joblib.dump(model_cnn, filename)
