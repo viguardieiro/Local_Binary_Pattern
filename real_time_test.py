@@ -12,8 +12,9 @@ import os
 import joblib
 import time
 import numpy as np
-
-
+import matplotlib.pyplot as plt
+from imutils.video import FileVideoStream
+from imutils.video import FPS
 
 
 
@@ -48,17 +49,34 @@ net = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 # open a pointer to the video file stream and initialize the total
 # number of frames read and saved thus far
 print("[INFO] starting video stream...")
-vs = VideoStream(src=0).start()
-time.sleep(2.0)
+#vs = cv2.VideoCapture('rtsp://admin:admin@192.168.1.168:554/ch01/0')
+vs = FileVideoStream('rtsp://admin:admin@192.168.1.168:554/ch01/0').start()
+#vs = VideoStream(src=0).start()
+time.sleep(1.0)
 
 
+HISTS = []
 
+fps = FPS().start()
 
 # loop over the frames from the video stream
-while True:
+while vs.more():
 	# grab the frame from the threaded video stream and resize it
 	# to have a maximum width of 400 pixels
 	frame = vs.read()
+
+	#time.sleep(0.1)
+
+	#cv2.imshow("Frame", frame)
+
+	#key = cv2.waitKey(1) & 0xFF
+	#fps.update()
+ 
+	# if the `q` key was pressed, break from the loop
+	#if key == ord("q"):
+	#	break
+
+	#continue
 
 
 	# grab the frame dimensions and construct a blob from the frame
@@ -92,6 +110,7 @@ while True:
 			gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 			
 			hist = desc.describe(gray)
+			HISTS.append(hist)
 			prediction = model.predict(hist.reshape(1, -1))
 			print(prediction)
 			cv2.rectangle(frame, (startX, startY), (endX, endY),
@@ -101,6 +120,7 @@ while True:
 	# show the output frame
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
+	fps.update()
  
 	# if the `q` key was pressed, break from the loop
 	if key == ord("q"):
@@ -108,3 +128,29 @@ while True:
 # do a bit of cleanup
 cv2.destroyAllWindows()
 vs.stop()
+
+fps.stop()
+print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+
+means = []
+stds = []
+
+X = np.array(HISTS)
+
+var_imp = [16, 15, 17, 14, 13, 18, 12, 11, 10, 19, 20,  9,  8,  7,  6,  5,  4,
+        3,  2, 21, 22, 23, 24,  1,  0, 25]
+
+for i in var_imp:
+    #print(i)
+    #print("Mean: ",np.mean(X[:,i])," std:", np.std(X[:,i]))
+    means.append(np.mean(X[:,i]))
+    stds.append(np.std(X[:,i]))
+
+fig,ax=plt.subplots(figsize=(5, 5))
+
+ax.set_ylim([0,0.25])
+
+ax.plot(means)
+ax.plot(stds)
+plt.show()
