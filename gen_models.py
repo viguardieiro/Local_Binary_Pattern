@@ -9,6 +9,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV
+from sklearn.decomposition import PCA
 from keras.optimizers import Adam
 from keras.utils import np_utils
 from pyimagesearch.livenessnet import LivenessNet
@@ -36,6 +37,10 @@ data_test = pickle.load(pickle_in)
 pickle_in = open("data/labels_test.pickle","rb")
 labels_test = pickle.load(pickle_in)
 
+pca = PCA()
+pca = pca.fit(data_train)
+data_pca_train = pca.transform(data_train)[:,0:3]
+data_pca_test = pca.transform(data_test)[:,0:3]
 
 # # Tunning KNN model
 
@@ -128,7 +133,7 @@ EPOCHS = 100
 # initialize the optimizer and model
 opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
 model_cnn = LivenessNet.build(width=32, height=32, depth=3,
-	classes=len(le.classes_))
+	classes=2)
 model_cnn.compile(loss="binary_crossentropy", optimizer=opt,
 	metrics=["accuracy"])
 # train the network
