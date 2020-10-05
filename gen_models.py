@@ -125,6 +125,10 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # CNN
 
+X_train = np.array(data_train)
+y_train = np.array(labels_train)
+X_test = np.array(data_test)
+y_test = np.array(labels_test)
 # initialize the initial learning rate, batch size, and number of
 # epochs to train for
 INIT_LR = 1e-4
@@ -138,7 +142,7 @@ model_cnn.compile(loss="binary_crossentropy", optimizer=opt,
 	metrics=["accuracy"])
 # train the network
 start_time = time.time()
-H = model_cnn.fit(data_train, labels_train, batch_size=BS, steps_per_epoch=len(data_train) // BS,
+H = model_cnn.fit(X_train, y_train, batch_size=BS, steps_per_epoch=len(X_train) // BS,
 	epochs=EPOCHS)
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
@@ -149,7 +153,7 @@ prediction_rf = best_model_random_forest.predict(data_test)
 prediction_svm = best_model_svm.predict(data_test)
 prediction_knn = best_model_neigh.predict(data_test)
 prediction_logistic = best_model_logistic.predict(data_test)
-prediction_cnn = model_cnn.predict(data_test, batch_size=BS)
+prediction_cnn = model_cnn.predict(X_test, batch_size=BS)
 
 # # Accuracy Best Models
 
@@ -167,7 +171,7 @@ print("Modelo Logistico",
 classification_report(labels_test,prediction_logistic))
 
 print("Modelo CNN",
-classification_report(labels_test,prediction_cnn))
+classification_report(y_test,prediction_cnn))
 
 
 # # Save Models
