@@ -20,7 +20,7 @@ import joblib
 import argparse
 import pickle
 import warnings
-from xgboost import XGBClassifier
+import xgboost as xgb
 warnings.filterwarnings('ignore')
 
 
@@ -124,8 +124,27 @@ X_train = np.array(data_train)
 y_train = np.array(labels_train)
 X_test = np.array(data_test)
 y_test = np.array(labels_test)
-model_xgboost = XGBClassifier()
-model_xgboost.fit(X_train, y_train)
+
+clf = xgb.XGBClassifier()
+parameters = {
+     "eta"    : [0.05, 0.10, 0.15, 0.20, 0.25, 0.30 ] ,
+     "max_depth"        : [ 3, 4, 5, 6, 8, 10, 12, 15],
+     "min_child_weight" : [ 1, 3, 5, 7 ],
+     "gamma"            : [ 0.0, 0.1, 0.2 , 0.3, 0.4 ],
+     "colsample_bytree" : [ 0.3, 0.4, 0.5 , 0.7 ]
+     }
+
+model_xgboost_tune = GridSearchCV(clf,
+                    parameters, n_jobs=4,
+                    scoring="neg_log_loss",
+                    cv=3)
+
+#Fit the model
+start_time = time.time()
+best_model_xgboost = model_xgboost_tune.fit(data_train, labels_train)
+#Print The value of best Hyperparameters
+print("Best: %f using %s" % (best_model_xgboost.best_score_,best_model_xgboost.best_params_))
+print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # CNN
 
@@ -244,7 +263,7 @@ prediction_rf = best_model_random_forest.predict(data_test)
 prediction_svm = best_model_svm.predict(data_test)
 prediction_knn = best_model_neigh.predict(data_test)
 prediction_logistic = best_model_logistic.predict(data_test)
-prediction_xgboost = model_xgboost(X_test)
+prediction_xgboost = best_model_xgboost.predict(X_test)
 # prediction_cnn = model_cnn.predict(X_test, batch_size=BS)
 prediction_rf_pca = best_model_random_forest_pca.predict(data_pca_test)
 prediction_svm_pca = best_model_svm_pca.predict(data_pca_test)
@@ -303,8 +322,8 @@ filename = 'models/best_model_logistic.joblib'
 joblib.dump(best_model_logistic, filename)
 
 # Xgboost
-filename = 'models/model_xgboost.joblib'
-joblib.dump(model_xgboost, filename)
+filename = 'models/best_model_xgboost.joblib'
+joblib.dump(best_model_xgboost, filename)
 
 # CNN
 # filename = 'models/model_cnn.joblib'
