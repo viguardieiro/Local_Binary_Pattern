@@ -307,3 +307,7 @@ joblib.dump(best_model_svm_pca, filename)
 # Logistic - PCA
 filename = 'models/best_model_logistic_pca.joblib'
 joblib.dump(best_model_logistic_pca, filename)
+
+## Save PCA
+
+pickle.dump(pca, open("models/pca.pkl","wb"))
