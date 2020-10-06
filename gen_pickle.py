@@ -7,6 +7,7 @@ import cv2
 import os
 import pickle
 from PIL import Image
+import numpy as np
 
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     # initialize the dimensions of the image to be resized and
