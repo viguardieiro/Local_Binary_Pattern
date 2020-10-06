@@ -20,6 +20,7 @@ import joblib
 import argparse
 import pickle
 import warnings
+from xgboost import XGBClassifier
 warnings.filterwarnings('ignore')
 
 
@@ -117,6 +118,10 @@ best_model_svm = model_svm_tune.fit(data_train, labels_train)
 #Print The value of best Hyperparameters
 print("Best: %f using %s" % (best_model_svm.best_score_,best_model_svm.best_params_))
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
+
+# # xgboost model
+model_xgboost = XGBClassifier()
+model_xgboost.fit(X_train, y_train)
 
 # # CNN
 
@@ -228,12 +233,14 @@ print("Best: %f using %s" % (best_model_svm.best_score_,best_model_svm.best_para
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 
+
 # # Prediction
 
 prediction_rf = best_model_random_forest.predict(data_test)
 prediction_svm = best_model_svm.predict(data_test)
 prediction_knn = best_model_neigh.predict(data_test)
 prediction_logistic = best_model_logistic.predict(data_test)
+prediction_xgboost = model_xgboost(data_test)
 # prediction_cnn = model_cnn.predict(X_test, batch_size=BS)
 prediction_rf_pca = best_model_random_forest_pca.predict(data_pca_test)
 prediction_svm_pca = best_model_svm_pca.predict(data_pca_test)
@@ -254,6 +261,9 @@ classification_report(labels_test,prediction_knn))
 
 print("Modelo Logistico",
 classification_report(labels_test,prediction_logistic))
+
+print("Modelo XGBOOST",
+classification_report(labels_test,prediction_xgboost))
 
 # print("Modelo CNN",
 # classification_report(y_test,prediction_cnn))
@@ -308,6 +318,6 @@ joblib.dump(best_model_svm_pca, filename)
 filename = 'models/best_model_logistic_pca.joblib'
 joblib.dump(best_model_logistic_pca, filename)
 
-## Save PCA
+# # Save PCA
 
 pickle.dump(pca, open("models/pca.pkl","wb"))
