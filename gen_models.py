@@ -148,6 +148,11 @@ data_pca_test = pca.transform(data_test)[:,0:3]
 
 # # Tunning KNN model - PCA
 
+#List Hyperparameters that we want to tune.
+n_neighbors = list(range(1,30))
+p=[1,2]
+#Convert to dictionary
+hyperparameters = dict(n_neighbors=n_neighbors, p=p)
 #Create new KNN object
 model_neigh_tune = KNeighborsClassifier()
 #Use GridSearch
@@ -162,6 +167,11 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # Tunning Logistic Regression - PCA
 
+#List Hyperparameters that we want to tune.
+dual=[True,False]
+max_iter=[100,110,120,130,140]
+C = [1.0,1.5,2.0,2.5]
+hyperparameters = dict(dual=dual,max_iter=max_iter,C=C)
 #Create new Logistic object
 model_logistic_tune = LogisticRegression()
 #Use GridSearch
@@ -176,6 +186,16 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # Tunning Random Forest - PCA
 
+# Create the parameter grid based on the results of random search 
+hyperparameters = {
+    'bootstrap': [True],
+    'max_depth': [80, 90, 100, 110],
+    'max_features': [2, 3],
+    #'min_samples_leaf': [3, 4, 5]
+    #'min_samples_split': [8, 10, 12]
+    #'n_estimators': [100, 200, 300, 1000]
+}
+# cre
 # create a new random forest
 model_rf_tune = RandomForestClassifier()
 #Use GridSearch
@@ -190,6 +210,12 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # Tunning SVC Linear - PCA
 
+# Create the parameter grid based on the results of random search 
+hyperparameters = {
+    'penalty': ["l1", "l2"],
+    'loss': ["hinge","squared_hinge"],
+    'C' : [0.1, 1, 10, 100, 1000]
+}
 # create a new random forest
 model_svm_tune = LinearSVC()
 #Use GridSearch
