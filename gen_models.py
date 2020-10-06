@@ -37,11 +37,6 @@ data_test = pickle.load(pickle_in)
 pickle_in = open("data/labels_test.pickle","rb")
 labels_test = pickle.load(pickle_in)
 
-pca = PCA()
-pca = pca.fit(data_train)
-data_pca_train = pca.transform(data_train)[:,0:3]
-data_pca_test = pca.transform(data_test)[:,0:3]
-
 # # Tunning KNN model
 
 #List Hyperparameters that we want to tune.
@@ -125,25 +120,85 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # CNN
 
-X_train = np.array(data_train)
-y_train = np.array(labels_train)
-X_test = np.array(data_test)
-y_test = np.array(labels_test)
-# initialize the initial learning rate, batch size, and number of
-# epochs to train for
-INIT_LR = 1e-4
-BS = 8
-EPOCHS = 100
-# initialize the optimizer and model
-opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
-model_cnn = LivenessNet.build(width=32, height=32, depth=3,
-	classes=2)
-model_cnn.compile(loss="binary_crossentropy", optimizer=opt,
-	metrics=["accuracy"])
-# train the network
+# X_train = np.array(data_train)
+# y_train = np.array(labels_train)
+# X_test = np.array(data_test)
+# y_test = np.array(labels_test)
+# # initialize the initial learning rate, batch size, and number of
+# # epochs to train for
+# INIT_LR = 1e-4
+# BS = 8
+# EPOCHS = 100
+# # initialize the optimizer and model
+# opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
+# model_cnn = LivenessNet.build(width=32, height=32, depth=3,
+# 	classes=2)
+# model_cnn.compile(loss="binary_crossentropy", optimizer=opt,
+# 	metrics=["accuracy"])
+# # train the network
+# start_time = time.time()
+# H = model_cnn.fit(X_train, y_train, batch_size=BS, steps_per_epoch=len(X_train) // BS,
+# 	epochs=EPOCHS)
+# print("Execution time: " + str((time.time() - start_time)) + ' ms')
+
+pca = PCA()
+pca = pca.fit(data_train)
+data_pca_train = pca.transform(data_train)[:,0:3]
+data_pca_test = pca.transform(data_test)[:,0:3]
+
+# # Tunning KNN model - PCA
+
+#Create new KNN object
+model_neigh_tune = KNeighborsClassifier()
+#Use GridSearch
+model_neigh_tune = GridSearchCV(model_neigh_tune, hyperparameters, cv=5)
+#Fit the model
 start_time = time.time()
-H = model_cnn.fit(X_train, y_train, batch_size=BS, steps_per_epoch=len(X_train) // BS,
-	epochs=EPOCHS)
+best_model_neigh_pca = model_neigh_tune.fit(data_pca_train, labels_train)
+#Print The value of best Hyperparameters
+print("Best: %f using %s" % (best_model_neigh.best_score_, best_model_neigh.best_params_))
+print("Execution time: " + str((time.time() - start_time)) + ' ms')
+
+
+# # Tunning Logistic Regression - PCA
+
+#Create new Logistic object
+model_logistic_tune = LogisticRegression()
+#Use GridSearch
+model_logistic_tune = GridSearchCV(model_logistic_tune, hyperparameters, cv=5)
+#Fit the model
+start_time = time.time()
+best_model_logistic_pca = model_logistic_tune.fit(data_pca_train, labels_train)
+#Print The value of best Hyperparameters
+print("Best: %f using %s" % (best_model_logistic.best_score_, best_model_logistic.best_params_))
+print("Execution time: " + str((time.time() - start_time)) + ' ms')
+
+
+# # Tunning Random Forest - PCA
+
+# create a new random forest
+model_rf_tune = RandomForestClassifier()
+#Use GridSearch
+model_rf_tune = GridSearchCV(model_rf_tune, hyperparameters, cv=5)
+#Fit the model
+start_time = time.time()
+best_model_random_forest_pca = model_rf_tune.fit(data_pca_train, labels_train)
+#Print The value of best Hyperparameters
+print("Best: %f using %s" % (best_model_random_forest.best_score_, best_model_random_forest.best_params_))
+print("Execution time: " + str((time.time() - start_time)) + ' ms')
+
+
+# # Tunning SVC Linear - PCA
+
+# create a new random forest
+model_svm_tune = LinearSVC()
+#Use GridSearch
+model_svm_tune = GridSearchCV(model_svm_tune, hyperparameters, cv=5)
+#Fit the model
+start_time = time.time()
+best_model_svm_pca = model_svm_tune.fit(data_pca_train, labels_train)
+#Print The value of best Hyperparameters
+print("Best: %f using %s" % (best_model_svm.best_score_,best_model_svm.best_params_))
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 
@@ -153,7 +208,11 @@ prediction_rf = best_model_random_forest.predict(data_test)
 prediction_svm = best_model_svm.predict(data_test)
 prediction_knn = best_model_neigh.predict(data_test)
 prediction_logistic = best_model_logistic.predict(data_test)
-prediction_cnn = model_cnn.predict(X_test, batch_size=BS)
+# prediction_cnn = model_cnn.predict(X_test, batch_size=BS)
+prediction_rf_pca = best_model_random_forest_pca.predict(data_pca_test)
+prediction_svm_pca = best_model_svm_pca.predict(data_pca_test)
+prediction_knn_pca = best_model_neigh_pca.predict(data_pca_test)
+prediction_logistic_pca = best_model_logistic_pca.predict(data_pca_test)
 
 # # Accuracy Best Models
 
@@ -170,9 +229,20 @@ classification_report(labels_test,prediction_knn))
 print("Modelo Logistico",
 classification_report(labels_test,prediction_logistic))
 
-print("Modelo CNN",
-classification_report(y_test,prediction_cnn))
+# print("Modelo CNN",
+# classification_report(y_test,prediction_cnn))
 
+print("Modelo SVM - PCA",
+classification_report(labels_test,prediction_svm_pca))
+
+print("Modelo Random Forest - PCA",
+classification_report(labels_test,prediction_rf_pca))
+
+print("Modelo KNN - PCA",
+classification_report(labels_test,prediction_knn_pca))
+
+print("Modelo Logistico - PCA",
+classification_report(labels_test,prediction_logistic_pca))
 
 # # Save Models
 
@@ -193,5 +263,21 @@ filename = 'models/best_model_logistic.joblib'
 joblib.dump(best_model_logistic, filename)
 
 # CNN
-filename = 'models/model_cnn.joblib'
-joblib.dump(model_cnn, filename)
+# filename = 'models/model_cnn.joblib'
+# joblib.dump(model_cnn, filename)
+
+# Random Forest - PCA
+filename = 'models/best_model_random_forest_pca.joblib'
+joblib.dump(best_model_random_forest_pca, filename)
+
+# KNN - PCA
+filename = 'models/best_model_knn_pca.joblib'
+joblib.dump(best_model_neigh_pca, filename)
+
+# SVM - PCA
+filename = 'models/best_model_svm_pca.joblib'
+joblib.dump(best_model_svm_pca, filename)
+
+# Logistic - PCA
+filename = 'models/best_model_logistic_pca.joblib'
+joblib.dump(best_model_logistic_pca, filename)
