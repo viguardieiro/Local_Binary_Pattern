@@ -302,6 +302,10 @@ joblib.dump(best_model_svm, filename)
 filename = 'models/best_model_logistic.joblib'
 joblib.dump(best_model_logistic, filename)
 
+# Xgboost
+filename = 'models/model_xgboost.joblib'
+joblib.dump(model_xgboost, filename)
+
 # CNN
 # filename = 'models/model_cnn.joblib'
 # joblib.dump(model_cnn, filename)
