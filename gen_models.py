@@ -141,7 +141,7 @@ model_xgboost_tune = GridSearchCV(clf,
 
 #Fit the model
 start_time = time.time()
-best_model_xgboost = model_xgboost_tune.fit(data_train, labels_train)
+best_model_xgboost = model_xgboost_tune.fit(X_train, y_train)
 #Print The value of best Hyperparameters
 print("Best: %f using %s" % (best_model_xgboost.best_score_,best_model_xgboost.best_params_))
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
