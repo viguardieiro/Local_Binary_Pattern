@@ -15,8 +15,38 @@ import numpy as np
 import matplotlib.pyplot as plt
 from imutils.video import FileVideoStream
 from imutils.video import FPS
+from PIL import Image
 
+def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
 
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation = inter)
+
+    # return the resized image
+    return resized
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -26,6 +56,8 @@ ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
 ap.add_argument("-m", "--model", type=str,
 	help="Path to model")
+ap.add_argument("-p", "--pca", type=str, default=None,
+	help="Path to pca model")
 args = vars(ap.parse_args())
 
 # initialize the local binary patterns descriptor along with
@@ -40,10 +72,7 @@ model = joblib.load(args["model"])
 
 # load our serialized face detector from disk
 print("[INFO] loading face detector...")
-protoPath = os.path.sep.join([args["detector"], "deploy.prototxt"])
-modelPath = os.path.sep.join([args["detector"],
-	"res10_300x300_ssd_iter_140000.caffemodel"])
-net = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
+detector = cv2.CascadeClassifier("face_detector/haarcascade_frontalface_default.xml")
 
 
 # open a pointer to the video file stream and initialize the total
@@ -65,57 +94,29 @@ while vs.more():
 	# to have a maximum width of 400 pixels
 	frame = vs.read()
 
-	#time.sleep(0.1)
-
-	#cv2.imshow("Frame", frame)
-
-	#key = cv2.waitKey(1) & 0xFF
-	#fps.update()
- 
-	# if the `q` key was pressed, break from the loop
-	#if key == ord("q"):
-	#	break
-
-	#continue
+	# load the image, convert it to grayscale, and describe it
+	#image = cv2.imread(imagePath)
+	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	# detect face
+	rects = detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30),
+									flags=cv2.CASCADE_SCALE_IMAGE)
 
 
-	# grab the frame dimensions and construct a blob from the frame
-	(h, w) = frame.shape[:2]
-	blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
-		(300, 300), (104.0, 177.0, 123.0))
+	if len(rects) > 0:
+		# get only the image of the face
+		face_gray = gray[rects[0][1]:rects[0][1]+rects[0][3], rects[0][0]:rects[0][0]+rects[0][2]]
+		pil_gray = Image.fromarray(face_gray)
+		open_cv_image = np.array(pil_gray)
+	
+		open_cv_image = image_resize(open_cv_image, height = 150)
 
-
-	# pass the blob through the network and obtain the detections and
-	# predictions
-	net.setInput(blob)
-	detections = net.forward()
-
-
-	if len(detections) > 0:
-		# we're making the assumption that each image has only ONE
-		# face, so find the bounding box with the largest probability
-		i = np.argmax(detections[0, 0, :, 2])
-		confidence = detections[0, 0, i, 2]
-
-		# ensure that the detection with the largest probability also
-		# means our minimum probability test (thus helping filter out
-		# weak detections)
-		if confidence > args["confidence"]:
-			# compute the (x, y)-coordinates of the bounding box for
-			# the face and extract the face ROI
-			box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-			(startX, startY, endX, endY) = box.astype("int")
-			face = frame[startY:endY, startX:endX]
-			
-			gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-			
-			hist = desc.describe(gray)
-			HISTS.append(hist)
-			prediction = model.predict(hist.reshape(1, -1))
-			print(prediction)
-			cv2.rectangle(frame, (startX, startY), (endX, endY),
-			(0, 0, 255), 2)
-			cv2.putText(frame, prediction[0], (300, 30),
+		hist = desc.describe(open_cv_image)
+		HISTS.append(hist)
+		prediction = model.predict(hist.reshape(1, -1))
+		print(prediction)
+		cv2.rectangle(frame, (rects[0][0], rects[0][1]), (rects[0][0]+rects[0][2], rects[0][1]+rects[0][3]),
+		(0, 0, 255), 2)
+		cv2.putText(frame, prediction[0], (300, 30),
 				cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 	# show the output frame
 	cv2.imshow("Frame", frame)
