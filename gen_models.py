@@ -120,8 +120,12 @@ print("Best: %f using %s" % (best_model_svm.best_score_,best_model_svm.best_para
 print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # xgboost model
+X_train = np.array(data_train)
+y_train = np.array(labels_train)
+X_test = np.array(data_test)
+y_test = np.array(labels_test)
 model_xgboost = XGBClassifier()
-model_xgboost.fit(data_train, labels_train)
+model_xgboost.fit(X_train, y_train)
 
 # # CNN
 
@@ -240,7 +244,7 @@ prediction_rf = best_model_random_forest.predict(data_test)
 prediction_svm = best_model_svm.predict(data_test)
 prediction_knn = best_model_neigh.predict(data_test)
 prediction_logistic = best_model_logistic.predict(data_test)
-prediction_xgboost = model_xgboost(data_test)
+prediction_xgboost = model_xgboost(X_test)
 # prediction_cnn = model_cnn.predict(X_test, batch_size=BS)
 prediction_rf_pca = best_model_random_forest_pca.predict(data_pca_test)
 prediction_svm_pca = best_model_svm_pca.predict(data_pca_test)
@@ -263,7 +267,7 @@ print("Modelo Logistico",
 classification_report(labels_test,prediction_logistic))
 
 print("Modelo XGBOOST",
-classification_report(labels_test,prediction_xgboost))
+classification_report(y_test,prediction_xgboost))
 
 # print("Modelo CNN",
 # classification_report(y_test,prediction_cnn))
