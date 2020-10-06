@@ -121,7 +121,7 @@ print("Execution time: " + str((time.time() - start_time)) + ' ms')
 
 # # xgboost model
 model_xgboost = XGBClassifier()
-model_xgboost.fit(X_train, y_train)
+model_xgboost.fit(data_train, labels_train)
 
 # # CNN
 
