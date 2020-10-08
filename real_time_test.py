@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from imutils.video import FileVideoStream
 from imutils.video import FPS
 from PIL import Image
+from pre_process.pre_process import pre_process_frame
 
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     # initialize the dimensions of the image to be resized and
@@ -94,28 +95,18 @@ while vs.more():
 	# to have a maximum width of 400 pixels
 	frame = vs.read()
 
-	# load the image, convert it to grayscale, and describe it
-	#image = cv2.imread(imagePath)
-	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	# detect face
-	rects = detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30),
-									flags=cv2.CASCADE_SCALE_IMAGE)
+	face, x1, x2, y1, y2 = pre_process_frame(frame,detector)
 
+	if face is not None:
+		
+		face = image_resize(face, height = 250)
+		gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
-	if len(rects) > 0:
-		# get only the image of the face
-		face_gray = gray[rects[0][1]:rects[0][1]+rects[0][3], rects[0][0]:rects[0][0]+rects[0][2]]
-		pil_gray = Image.fromarray(face_gray)
-		open_cv_image = np.array(pil_gray)
-	
-		open_cv_image = image_resize(open_cv_image, height = 150)
-
-		hist = desc.describe(open_cv_image)
+		hist = desc.describe(gray)
 		HISTS.append(hist)
 		prediction = model.predict(hist.reshape(1, -1))
 		print(prediction)
-		cv2.rectangle(frame, (rects[0][0], rects[0][1]), (rects[0][0]+rects[0][2], rects[0][1]+rects[0][3]),
-		(0, 0, 255), 2)
+		cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
 		cv2.putText(frame, prediction[0], (300, 30),
 				cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 	# show the output frame
@@ -133,25 +124,3 @@ vs.stop()
 fps.stop()
 print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
 print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
-
-means = []
-stds = []
-
-X = np.array(HISTS)
-
-var_imp = [16, 15, 17, 14, 13, 18, 12, 11, 10, 19, 20,  9,  8,  7,  6,  5,  4,
-        3,  2, 21, 22, 23, 24,  1,  0, 25]
-
-for i in var_imp:
-    #print(i)
-    #print("Mean: ",np.mean(X[:,i])," std:", np.std(X[:,i]))
-    means.append(np.mean(X[:,i]))
-    stds.append(np.std(X[:,i]))
-
-fig,ax=plt.subplots(figsize=(5, 5))
-
-ax.set_ylim([0,0.25])
-
-ax.plot(means)
-ax.plot(stds)
-plt.show()
