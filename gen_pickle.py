@@ -56,7 +56,7 @@ for imagePath in paths.list_images("frames_reais/"):
 	# load the image, convert it to grayscale, and describe it
 	image = cv2.imread(imagePath)
 
-	face, x1, x2, y1, y2 = pre_process_frame(gray,detector)
+	face, x1, x2, y1, y2 = pre_process_frame(image,detector)
 
 	if face is not None:
 		
