@@ -66,7 +66,7 @@ for imagePath in paths.list_images("frames_reais/"):
         gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
         # save image
-        cv2.imwrite("faces_reais/face"+str(real_id), face)
+        cv2.imwrite("faces_reais/face"+str(real_id)+".jpg", face)
 
         hist = desc.describe(gray)
 
@@ -93,7 +93,7 @@ for imagePath in paths.list_images("frames_fakes/"):
         gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
         # save image
-        cv2.imwrite("faces_fakes/face"+str(fake_id), face)
+        cv2.imwrite("faces_fakes/face"+str(fake_id)+".jpg", face)
 
         hist = desc.describe(gray)
 
