@@ -5,3 +5,6 @@ data/data_test.pickle
 data/data_train.pickle
 data/labels_test.pickle
 data/labels_train.pickle
+pca_models.ipynb
+.ipynb_checkpoints/pca_models-checkpoint.ipynb
+__pycache__/localbinarypatterns.cpython-37.pyc
