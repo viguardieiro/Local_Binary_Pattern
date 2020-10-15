@@ -57,11 +57,11 @@ for imagePath in paths.list_images("frames_reais/"):
     real_id += 1
 
 	# load the image, convert it to grayscale, and describe it
-	image = cv2.imread(imagePath)
+    image = cv2.imread(imagePath)
 
-	face, x1, x2, y1, y2 = pre_process_frame(image,detector)
+    face, x1, x2, y1, y2 = pre_process_frame(image,detector)
 
-	if face is not None:
+    if face is not None:
 		face = image_resize(face, height = 250)
 		gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
