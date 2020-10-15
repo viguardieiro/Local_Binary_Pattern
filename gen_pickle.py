@@ -50,18 +50,23 @@ data_fake = []
 labels_fake = []
 
 detector = cv2.CascadeClassifier("face_detector/haarcascade_frontalface_default.xml")
+real_id = 0
 
 # loop over the real images
 for imagePath in paths.list_images("frames_reais/"):
+    real_id += 1
+
 	# load the image, convert it to grayscale, and describe it
 	image = cv2.imread(imagePath)
 
 	face, x1, x2, y1, y2 = pre_process_frame(image,detector)
 
 	if face is not None:
-		
 		face = image_resize(face, height = 250)
 		gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+
+        # save image
+        cv2.imwrite("faces_reais/face"+str(real_id), face)
 
 		hist = desc.describe(gray)
 
@@ -72,9 +77,11 @@ for imagePath in paths.list_images("frames_reais/"):
 		labels_real.append(im)
 		data_real.append(hist)
 
+fake_id  = 0
 
 # loop over fake images
 for imagePath in paths.list_images("frames_fakes/"):
+    fake_id += 1
 	# load the image, convert it to grayscale, and describe it
 	image = cv2.imread(imagePath)
 
@@ -84,6 +91,9 @@ for imagePath in paths.list_images("frames_fakes/"):
 		
 		face = image_resize(face, height = 250)
 		gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+
+        # save image
+        cv2.imwrite("faces_fakes/face"+str(fake_id), face)
 
 		hist = desc.describe(gray)
 
