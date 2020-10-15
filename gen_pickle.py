@@ -62,20 +62,20 @@ for imagePath in paths.list_images("frames_reais/"):
     face, x1, x2, y1, y2 = pre_process_frame(image,detector)
 
     if face is not None:
-		face = image_resize(face, height = 250)
-		gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        face = image_resize(face, height = 250)
+        gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
         # save image
         cv2.imwrite("faces_reais/face"+str(real_id), face)
 
-		hist = desc.describe(gray)
+        hist = desc.describe(gray)
 
 		# extract the label from the image path, then update the
 		# label and data lists
-		im = imagePath.split(os.path.sep)[-1]
-		im = im[0:4]
-		labels_real.append(im)
-		data_real.append(hist)
+        im = imagePath.split(os.path.sep)[-1]
+        im = im[0:4]
+        labels_real.append(im)
+        data_real.append(hist)
 
 fake_id  = 0
 
@@ -83,26 +83,26 @@ fake_id  = 0
 for imagePath in paths.list_images("frames_fakes/"):
     fake_id += 1
 	# load the image, convert it to grayscale, and describe it
-	image = cv2.imread(imagePath)
+    image = cv2.imread(imagePath)
 
-	face, x1, x2, y1, y2 = pre_process_frame(image,detector)
+    face, x1, x2, y1, y2 = pre_process_frame(image,detector)
 
-	if face is not None:
+    if face is not None:
 		
-		face = image_resize(face, height = 250)
-		gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+        face = image_resize(face, height = 250)
+        gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
         # save image
         cv2.imwrite("faces_fakes/face"+str(fake_id), face)
 
-		hist = desc.describe(gray)
+        hist = desc.describe(gray)
 
 		# extract the label from the image path, then update the
 		# label and data lists
-		im = imagePath.split(os.path.sep)[-1]
-		im = im[0:4]
-		labels_fake.append(im)
-		data_fake.append(hist)
+        im = imagePath.split(os.path.sep)[-1]
+        im = im[0:4]
+        labels_fake.append(im)
+        data_fake.append(hist)
 
 
 # Split and join data
