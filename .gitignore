@@ -1,2 +1,7 @@
 
 __pycache__/
+models/
+data/data_test.pickle
+data/data_train.pickle
+data/labels_test.pickle
+data/labels_train.pickle
