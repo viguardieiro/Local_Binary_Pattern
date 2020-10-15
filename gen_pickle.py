@@ -59,16 +59,39 @@ for imagePath in paths.list_images("frames_reais/"):
 	# load the image, convert it to grayscale, and describe it
     image = cv2.imread(imagePath)
 
-    face, x1, x2, y1, y2 = pre_process_frame(image,detector)
+    # Detecção nova
 
-    if face is not None:
-        face = image_resize(face, height = 250)
-        gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+    # face, x1, x2, y1, y2 = pre_process_frame(image,detector)
 
-        # save image
-        cv2.imwrite("faces_reais/face"+str(real_id)+".jpg", face)
+    # if face is not None:
+    #     face = image_resize(face, height = 250)
+    #     gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
-        hist = desc.describe(gray)
+    #     # save image
+    #     cv2.imwrite("faces_reais/face"+str(real_id)+".jpg", face)
+
+    #     hist = desc.describe(gray)
+
+	# 	# extract the label from the image path, then update the
+	# 	# label and data lists
+    #     im = imagePath.split(os.path.sep)[-1]
+    #     im = im[0:4]
+    #     labels_real.append(im)
+    #     data_real.append(hist)
+
+    # Detecção antiga
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    rects = detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30),
+            flags=cv2.CASCADE_SCALE_IMAGE)
+    for rect in rects:
+        face_gray = gray[rect[1]:rect[1]+rect[3], rect[0]:rect[0]+rect[2]]
+        pil_gray = Image.fromarray(face_gray)
+        open_cv_image = np.array(pil_gray)
+        
+        open_cv_image = image_resize(open_cv_image, height = 150)
+
+        hist = desc.describe(open_cv_image)
 
 		# extract the label from the image path, then update the
 		# label and data lists
@@ -85,17 +108,31 @@ for imagePath in paths.list_images("frames_fakes/"):
 	# load the image, convert it to grayscale, and describe it
     image = cv2.imread(imagePath)
 
-    face, x1, x2, y1, y2 = pre_process_frame(image,detector)
+    # face, x1, x2, y1, y2 = pre_process_frame(image,detector)
 
-    if face is not None:
+    # if face is not None:
 		
-        face = image_resize(face, height = 250)
-        gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+    #     face = image_resize(face, height = 250)
+    #     gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
-        # save image
-        cv2.imwrite("faces_fakes/face"+str(fake_id)+".jpg", face)
+    #     # save image
+    #     cv2.imwrite("faces_fakes/face"+str(fake_id)+".jpg", face)
 
-        hist = desc.describe(gray)
+    #     hist = desc.describe(gray)
+
+    # Detecção antiga
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    rects = detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30),
+            flags=cv2.CASCADE_SCALE_IMAGE)
+    for rect in rects:
+        face_gray = gray[rect[1]:rect[1]+rect[3], rect[0]:rect[0]+rect[2]]
+        pil_gray = Image.fromarray(face_gray)
+        open_cv_image = np.array(pil_gray)
+        
+        open_cv_image = image_resize(open_cv_image, height = 150)
+
+        hist = desc.describe(open_cv_image)
 
 		# extract the label from the image path, then update the
 		# label and data lists
